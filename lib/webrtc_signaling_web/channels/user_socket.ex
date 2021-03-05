@@ -2,7 +2,7 @@ defmodule WebrtcSignalingWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  # channel "room:*", WebrtcSignalingWeb.RoomChannel
+  channel "channel:signal", WebrtcSignalingWeb.RoomChannel
 
   ## Transports
   transport :websocket, Phoenix.Transports.WebSocket
