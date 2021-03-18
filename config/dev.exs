@@ -7,12 +7,20 @@ use Mix.Config
 # watchers to your application. For example, we use it
 # with brunch.io to recompile .js and .css sources.
 config :webrtc_signaling, WebrtcSignalingWeb.Endpoint,
-  http: [port: 5000],
+  # https: [port: 5000, keyfile: "priv/server.key", certfile: "priv/server.pem"],
+  # https: [port: 5000, keyfile: "priv/server.key", certfile: "priv/server.crt"],
+  http: [port: 4000],
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: [node: ["node_modules/brunch/bin/brunch", "watch", "--stdin",
-                    cd: Path.expand("../assets", __DIR__)]]
+  watchers: [
+    node: [
+      "node_modules/brunch/bin/brunch",
+      "watch",
+      "--stdin",
+      cd: Path.expand("../assets", __DIR__)
+    ]
+  ]
 
 # ## SSL Support
 #
