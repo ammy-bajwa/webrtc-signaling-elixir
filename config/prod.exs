@@ -25,6 +25,7 @@ config :webrtc_signaling, WebrtcSignalingWeb.Endpoint,
 # Do not print debug messages in production
 config :logger, level: :info
 
+
 # ## SSL Support
 #
 # To get SSL working, you will need to add the `https` key
