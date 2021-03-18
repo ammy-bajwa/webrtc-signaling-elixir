@@ -2,10 +2,10 @@ defmodule WebrtcSignalingWeb.UserSocket do
   use Phoenix.Socket
 
   ## Channels
-  channel "channel:signal", WebrtcSignalingWeb.RoomChannel
+  channel("channel:signal", WebrtcSignalingWeb.RoomChannel)
 
   ## Transports
-  transport :websocket, Phoenix.Transports.WebSocket
+  transport(:websocket, Phoenix.Transports.WebSocket, timeout: 45_000)
   # transport :longpoll, Phoenix.Transports.LongPoll
 
   # Socket params are passed from the client and can
