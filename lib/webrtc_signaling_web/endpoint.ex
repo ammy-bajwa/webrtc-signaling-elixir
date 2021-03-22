@@ -3,13 +3,17 @@ defmodule WebrtcSignalingWeb.Endpoint do
 
   socket "/socket", WebrtcSignalingWeb.UserSocket
 
+
   # Serve at "/" the static files from "priv/static" directory.
   #
   # You should set gzip to true if you are running phoenix.digest
   # when deploying your static files in production.
   plug Plug.Static,
-    at: "/", from: :webrtc_signaling, gzip: false,
-    only: ~w(css fonts images js favicon.ico robots.txt)
+  at: "/",
+  from: "assets/build",
+  gzip: false,
+  only:
+    ~w(index.html favicon.ico logo192.png logo512.png static service-worker.js manifest.json)
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -19,6 +23,8 @@ defmodule WebrtcSignalingWeb.Endpoint do
 
   plug Plug.Logger
 
+  plug Plug.RequestId
+  plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   plug Plug.Parsers,
     parsers: [:urlencoded, :multipart, :json],
     pass: ["*/*"],

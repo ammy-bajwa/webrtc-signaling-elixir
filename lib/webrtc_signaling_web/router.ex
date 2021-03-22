@@ -8,4 +8,8 @@ defmodule WebrtcSignalingWeb.Router do
   scope "/api", WebrtcSignalingWeb do
     pipe_through :api
   end
+
+  scope "/", WebrtcSignalingWeb do
+    get("/*path", PageController, :index)
+  end
 end
