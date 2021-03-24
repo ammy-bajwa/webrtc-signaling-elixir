@@ -6,6 +6,8 @@ import { setStatus } from "../../../status/status";
 
 import { saveFileMetadataInIndexedDB } from "../../../idbUtils/saveFileMetadataInIndexedDB/saveFileMetadataInIndexedDB";
 
+import redux from "../../../utils/manageRedux";
+
 export const uploadBatches = async (
   filesWithMetadata,
   numberOfChunksInSingleBatch
@@ -26,7 +28,6 @@ export const uploadBatches = async (
           chunksArr,
           numberOfChunksInSingleBatch
         );
-        console.log("batchesMetaData: ", batchesMetaData);
         // Here we will save files metadata to indexed db
         await saveFileMetadataInIndexedDB(fileName, fileSize, batchesMetaData);
 
@@ -35,8 +36,10 @@ export const uploadBatches = async (
         setStatus(
           `<h2>
             ${file["name"]} has been saved successfully
-      </h2>`
+          </h2>`
         );
+        await redux.moveToidbState(file["name"]);
+        console.log("uploadedfile:>>>>>>>>",file);
       }
       resolve(true);
     } catch (error) {

@@ -6,9 +6,7 @@ import { setStatus } from "../../status/status";
 
 import { handleMetadataChannel } from "../handleMetadataChannel/handleMetadataChannel";
 
-// import { handleReceivedChunk } from "../../idbUtils/handleReceivedChunk/handleReceivedChunk";
-
-// import { doConfirmationForBatch } from "../../idbUtils/doConfirmationForBatch/doConfirmationForBatch";
+import { sendFile } from "../sendFile/sendFile";
 
 import { checkIfAlreadyExist } from "../../idbUtils/checkIfAlreadyExist/checkIfAlreadyExist";
 
@@ -107,7 +105,13 @@ export const initializeWebRTC = function (channel, machineId) {
               );
               return;
             } else if (receivedMessage.isConfirmation) {
-              const { batchHash, fileName, batchKey } = receivedMessage;
+              const {
+                batchHash,
+                fileName,
+                batchKey,
+                endBatchIndex,
+                fileSize,
+              } = receivedMessage;
               console.log("Confirmation message: ", message);
               const inMemoryBatchChunks = alivaWebRTC.chunks[batchHash];
               if (inMemoryBatchChunks.confirmation) {
@@ -141,6 +145,7 @@ export const initializeWebRTC = function (channel, machineId) {
                   }
                 }
                 if (isTotalBatchReceived) {
+                  setStatus(`<h2>Validating batch ${batchKey}</h2>`);
                   const batchBlob = await convertInMemoryBatchToBlob(
                     inMemoryBatchChunks
                   );
@@ -158,6 +163,7 @@ export const initializeWebRTC = function (channel, machineId) {
                       inMemoryBatchChunks
                     );
                   } else {
+                    setStatus(`<h2>Saving batch in idb<${batchKey}</h2>`);
                     missingChunks = await findInMemoryMissingBatchChunks(
                       fileName,
                       batchKey,
@@ -166,6 +172,20 @@ export const initializeWebRTC = function (channel, machineId) {
                     );
                     await saveBatchBlobToIdb(batchHash, batchBlob);
                     alivaWebRTC.chunks[batchHash] = { confirmation: true };
+                    const status =
+                      endBatchIndex !== fileSize
+                        ? `<h2>
+      ${(endBatchIndex / 1000 / 1000).toFixed(
+        2
+      )} MB has been saved ${fileName} file out of ${(
+                            fileSize /
+                            1000 /
+                            1000
+                          ).toFixed(2)} MB 
+        </h2>`
+                        : `<h2>
+        All File Received Successfully ${fileName}</h2>`;
+                    setStatus(status);
                   }
                 } else {
                   missingChunks = await findInMemoryMissingBatchChunks(
@@ -192,6 +212,10 @@ export const initializeWebRTC = function (channel, machineId) {
               const { batchHash } = receivedMessage;
               const isBatchExists = await checkIfAlreadyExist(batchHash);
               dataChannel.send(JSON.stringify({ isBatchExists }));
+            } else if (receivedMessage.requestFile) {
+              const { fileName } = receivedMessage;
+              console.log("requestFile received", fileName);
+              await sendFile(fileName);
             }
           } catch (error) {
             console.log("Got message on error: ", message);

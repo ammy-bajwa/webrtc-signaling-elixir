@@ -4,6 +4,8 @@ import { saveReceivedMetadata } from "../../idbUtils/saveReceivedMetadata/saveRe
 
 import { createBatchesDbs } from "../../idbUtils/createBatchesDbs/createBatchesDbs";
 
+import redux from "../../utils/manageRedux";
+
 export const handleMetadataChannel = function (dataChannel) {
   dataChannel.onopen = () => {
     console.log("On metadata datachannel open");
@@ -22,9 +24,16 @@ export const handleMetadataChannel = function (dataChannel) {
         name,
         size,
         batchesMetaData,
-        // isReceived,
+        isReceived,
         fileHash,
       } = parsedMessage;
+      redux.saveReceivedMetadataInState({
+        name,
+        size,
+        batchesMetaData,
+        fileHash,
+        isReceived,
+      });
       await saveReceivedMetadata(name, size, batchesMetaData, fileHash);
       await createBatchesDbs(batchesMetaData);
       dataChannel.send(

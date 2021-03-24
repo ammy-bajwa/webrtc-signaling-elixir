@@ -1,5 +1,6 @@
 import { Component } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { connect } from "react-redux";
 
 import DisplayFiles from "./components/displayFiles";
 
@@ -9,6 +10,8 @@ import { onSubmit } from "./forms/folderUploadForm/onSubmit/onSubmit";
 import { getAllSavedFiles } from "./idbUtils/getAllSavedFiles/getAllSavedFiles";
 import { alivaWebRTC } from "./webrtc/index";
 import { sendFilesMetadata } from "./webrtc/sendFilesMetadata/sendFilesMetadata";
+import redux from "./utils/manageRedux";
+// import { findByPlaceholderText } from "@testing-library/dom";
 
 class App extends Component {
   state = {
@@ -17,11 +20,12 @@ class App extends Component {
     idbFiles: [],
   };
   async componentDidMount() {
+    console.log("datasycs", alivaWebRTC);
     const machineId = uuidv4();
     try {
-      await alivaWS.initializeSocket("/socket");
+      await alivaWS.initializeSocket("ws://localhost:4000/socket");
     } catch (error) {
-      await alivaWS.initializeSocket("/socket");
+      await alivaWS.initializeSocket("ws://localhost:4000/socket");
     }
     await alivaWebRTC.initializeWebRTC(alivaWS.channel, machineId);
     await alivaWebRTC.addWebrtcListener(
@@ -30,12 +34,13 @@ class App extends Component {
       alivaWebRTC.peerConnection
     );
     const files = await getAllSavedFiles();
-    this.setState({ machineId, idbFiles: files });
+    redux.storeState({ machineId, idbFiles: files });
     console.log("files: ", files);
   }
 
   handleWebRtcConnection = async () => {
-    await alivaWebRTC.createDataChannel("dc");
+ 
+    await alivaWebRTC.createDataChannel("dc")
   };
 
   cleanDBs = () => {
@@ -51,15 +56,15 @@ class App extends Component {
   };
 
   handleFileChange = (event) => {
-    const files = event.target.files;
+    const files = Array.from(event.target.files);
     console.log("On change", files);
     if (files.length > 0) {
-      this.setState({ files });
+      redux.addFile({ files });
     }
   };
 
   handleSyncMetadata = async () => {
-    const { idbFiles } = this.state;
+    const { idbFiles } = this.props.fileState;
     const webRTCConnState = alivaWebRTC.peerConnection.connectionState;
     if (idbFiles.length <= 0) {
       alert("Please upload a file first");
@@ -73,7 +78,7 @@ class App extends Component {
     }
   };
   render() {
-    const { files, idbFiles } = this.state;
+    const { files, idbFiles } = this.props.fileState;
     return (
       <div>
         <div id="statusElement" className="text-center text-large text-info">
@@ -87,13 +92,15 @@ class App extends Component {
           >
             Connect with webrtc
           </button>
-          <button
+
+          {/* <button
             type="button"
             className="btn btn-dark m-2"
             onClick={this.handleWebRtcConnection}
           >
             Send Files Metadata
-          </button>
+          </button> */}
+
           <button
             type="button"
             className="btn btn-dark m-2"
@@ -104,7 +111,7 @@ class App extends Component {
         </div>
         <div>
           <h2>Files Present In IDB</h2>
-          <DisplayFiles files={idbFiles} />
+          <DisplayFiles files={idbFiles} isDelete={true} />
           <button
             type="button"
             className="btn btn-outline-dark m-2"
@@ -115,7 +122,7 @@ class App extends Component {
         </div>
         <div>
           <h2>Uploaded Files Will Be Here</h2>
-          <DisplayFiles files={files} />
+          <DisplayFiles files={files} isDelete={false} />
         </div>
         <form className="row mt-2" onSubmit={onSubmit}>
           <div className="col-auto">
@@ -138,4 +145,10 @@ class App extends Component {
   }
 }
 
-export default App;
+const mapStateToProps = function (state) {
+  return {
+    fileState: state.fileReducer,
+  };
+};
+
+export default connect(mapStateToProps)(App);

@@ -42,7 +42,14 @@ export const readAndSaveBatches = async (file, batchesMetaData) => {
             const batchHash = await getHashOfArraybuffer(batchArr);
             batchesHashes.push(batchHash);
             await addHashToBatchMetadata(fileName, batchKey, batchHash);
-            inMemoryBatches.push({ batchHash, batchWithFileData });
+            const fileSize = (file["size"] / 1000 / 1000).toFixed(2);
+            inMemoryBatches.push({
+              batchHash,
+              batchWithFileData,
+              endBatchIndex,
+              fileName,
+              fileSize
+            });
             statusHelper = endBatchIndex;
           } else {
             break;
@@ -54,9 +61,9 @@ export const readAndSaveBatches = async (file, batchesMetaData) => {
           `<h2>
             Working to upload ${(statusHelper / 1000 / 1000).toFixed(
               2
-            )} MB out of ${(file["size"] / 1000 / 1000).toFixed(
-            2
-          )} MB ${file["name"]} file
+            )} MB out of ${(file["size"] / 1000 / 1000).toFixed(2)} MB ${
+            file["name"]
+          } file
               </h2>`
         );
         await saveBatchesToIndexDB(inMemoryBatches);

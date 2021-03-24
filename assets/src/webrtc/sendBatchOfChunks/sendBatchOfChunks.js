@@ -23,9 +23,19 @@ export const sendBatchOfChunks = async (batchOfChunksIDB, batchHash) => {
           }
           const dcKey = dataChannelsKeys[dataChannelsHelper];
           const { dataChannel } = allDataChannels[dcKey];
-          dataChannel.send(
-            JSON.stringify({ isChunk: true, chunkToSend, batchHash })
-          );
+          const { label } = dataChannel;
+          const isMetadataDc = label.split("dc")[1];
+          if (isMetadataDc) {
+            dataChannel.send(
+              JSON.stringify({ isChunk: true, chunkToSend, batchHash })
+            );
+          } else {
+            const dcKey = dataChannelsKeys[0];
+            const { dataChannel } = allDataChannels[dcKey];
+            dataChannel.send(
+              JSON.stringify({ isChunk: true, chunkToSend, batchHash })
+            );
+          }
           dataChannelsHelper++;
         }
       }

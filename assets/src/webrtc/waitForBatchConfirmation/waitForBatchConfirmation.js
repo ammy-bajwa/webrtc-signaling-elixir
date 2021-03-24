@@ -6,7 +6,9 @@ export const waitForBatchConfirmation = (
   fileName,
   batchKey,
   batchHash,
-  batchOfChunksIDB
+  batchOfChunksIDB,
+  endBatchIndex,
+  fileSize
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -15,12 +17,13 @@ export const waitForBatchConfirmation = (
       if (!dataChannel) {
         dataChannel = await alivaWebRTC.createDataChannel("batchConfirmation");
       }
-      console.log("Inside batch confirmation");
       let batchConfirmationPayload = {
         isConfirmation: true,
         batchKey,
         batchHash,
         fileName,
+        endBatchIndex,
+        fileSize,
       };
       batchConfirmationPayload = JSON.stringify(batchConfirmationPayload);
       let doesChange = false;
@@ -38,11 +41,16 @@ export const waitForBatchConfirmation = (
             const resendChunkObj = {};
             for (let index = 0; index < missingChunks.length; index++) {
               const chunkKey = missingChunks[index];
-              resendChunkObj[chunkKey] = batchOfChunksIDB[chunkKey];
+
+              const resendChunk = batchOfChunksIDB[chunkKey];
+              if (resendChunk) {
+                resendChunkObj[chunkKey] = resendChunk;
+              }
             }
-            await sendBatchOfChunks(resendChunkObj, batchHash);
+            console.log("Inside batch confirmation");
             console.log("Resending batch: ", resendChunkObj);
             console.log("Resending batch hash: ", batchHash);
+            await sendBatchOfChunks(resendChunkObj, batchHash);
             dataChannel.send(batchConfirmationPayload);
             setTimeout(() => {
               if (!doesChange) {

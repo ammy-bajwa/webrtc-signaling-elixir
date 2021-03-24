@@ -37,7 +37,8 @@ export const createDataChannel = function (dataChannelName) {
     };
 
     dataChannel.onmessage = async (event) => {
-      console.log("Got message", event.data);
+      // console.log("Got message", event.data);
+      console.log("Got message");
       try {
         let receivedMessage = JSON.parse(event.data);
         if (receivedMessage.requestFile) {
