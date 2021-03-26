@@ -33,6 +33,7 @@ export const handleMetadataChannel = function (dataChannel) {
         batchesMetaData,
         fileHash,
         isReceived,
+        isOnlyMetadata: true
       });
       await saveReceivedMetadata(name, size, batchesMetaData, fileHash);
       await createBatchesDbs(batchesMetaData);

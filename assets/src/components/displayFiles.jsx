@@ -31,12 +31,6 @@ const DisplayFiles = ({ files, isDelete }) => {
       );
     }
   };
-  // const handleGetFile = async (fileName) => {
-  //   const fileMetadata = await getFileMetadataFromIndexedDB(fileName);
-  //   await sendFile(fileMetadata);
-  //   console.log("fileMetadata", fileMetadata);
-  // };
-
   const requestFile = async (fileName) => {
     const dataChannelsCount = Object.keys(alivaWebRTC.dataChannels).length;
     setStatus("<h2>Setting up datachannels...</h2>");

@@ -50,7 +50,7 @@ export const waitForBatchConfirmation = (
             console.log("Inside batch confirmation");
             console.log("Resending batch: ", resendChunkObj);
             console.log("Resending batch hash: ", batchHash);
-            await sendBatchOfChunks(resendChunkObj, batchHash);
+            await sendBatchOfChunks(fileName, resendChunkObj, batchHash);
             dataChannel.send(batchConfirmationPayload);
             setTimeout(() => {
               if (!doesChange) {

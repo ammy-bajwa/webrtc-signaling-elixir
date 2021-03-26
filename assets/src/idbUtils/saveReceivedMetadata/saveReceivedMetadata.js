@@ -21,10 +21,16 @@ export const saveReceivedMetadata = (
         fileSize,
         batchesMetaData,
         isReceived: true,
+        isOnlyMetadata: true,
         fileHash,
       };
       const existedValue = await db.get(storeName, key);
       if (existedValue) {
+        if (!existedValue?.isReceived) {
+          db.close();
+          resolve(true);
+          return;
+        }
         value.batchesMetaData = {
           ...existedValue.batchesMetaData,
           ...batchesMetaData,

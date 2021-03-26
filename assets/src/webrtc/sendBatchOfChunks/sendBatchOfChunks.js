@@ -2,11 +2,16 @@ import { alivaWebRTC } from "../index";
 
 import { convertBlobToBase64 } from "../../fileUtils/convertBlobToBase64/convertBlobToBase64";
 
-export const sendBatchOfChunks = async (batchOfChunksIDB, batchHash) => {
+export const sendBatchOfChunks = async (
+  fileName,
+  batchOfChunksIDB,
+  batchHash
+) => {
   return new Promise(async (resolve, reject) => {
     try {
-      const allDataChannels = alivaWebRTC.dataChannels;
-      const dataChannelsKeys = Object.keys(alivaWebRTC.dataChannels);
+      const allDataChannels =
+        alivaWebRTC.filesPeerConnections[fileName].dataChannels;
+      const dataChannelsKeys = Object.keys(allDataChannels);
       let dataChannelsHelper = 0;
       for (const chunkKey in batchOfChunksIDB) {
         if (Object.hasOwnProperty.call(batchOfChunksIDB, chunkKey)) {
@@ -23,19 +28,9 @@ export const sendBatchOfChunks = async (batchOfChunksIDB, batchHash) => {
           }
           const dcKey = dataChannelsKeys[dataChannelsHelper];
           const { dataChannel } = allDataChannels[dcKey];
-          const { label } = dataChannel;
-          const isMetadataDc = label.split("dc")[1];
-          if (isMetadataDc) {
-            dataChannel.send(
-              JSON.stringify({ isChunk: true, chunkToSend, batchHash })
-            );
-          } else {
-            const dcKey = dataChannelsKeys[0];
-            const { dataChannel } = allDataChannels[dcKey];
-            dataChannel.send(
-              JSON.stringify({ isChunk: true, chunkToSend, batchHash })
-            );
-          }
+          dataChannel.send(
+            JSON.stringify({ isChunk: true, chunkToSend, batchHash })
+          );
           dataChannelsHelper++;
         }
       }
