@@ -18,7 +18,7 @@ const customStyles = {
 
 export default function App({ modalIsOpen, file, closeModal }) {
   const videoOptions = {
-    autoplay: true,
+    autoplay: false,
     controls: true,
     sources: [
       {
