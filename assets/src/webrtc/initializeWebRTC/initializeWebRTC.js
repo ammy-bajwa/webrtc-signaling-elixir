@@ -12,6 +12,10 @@ import { checkIfAlreadyExist } from "../../idbUtils/checkIfAlreadyExist/checkIfA
 
 // import { getAllBatchKeys } from "../../idbUtils/getAllBatchKeys/getAllBatchKeys";
 
+import { handleAllFileReceived } from "../../idbUtils/handleAllFileReceived/handleAllFileReceived";
+
+import { allFileSendSignal } from "../allFileSendSignal/allFileSendSignal";
+
 import { saveBatchBlobToIdb } from "../../idbUtils/saveBatchBlobToIdb/saveBatchBlobToIdb";
 
 import { convertInMemoryBatchToBlob } from "../../fileUtils/convertInMemoryBatchToBlob/convertInMemoryBatchToBlob";
@@ -24,34 +28,13 @@ import { getHashOfArraybuffer } from "../../fileUtils/getHashOfArraybuffer/getHa
 
 import { findInMemoryMissingBatchChunks } from "../../fileUtils/findInMemoryMissingBatchChunks/findInMemoryMissingBatchChunks";
 
-const iceServers = [
-  {
-    urls: ["stun:avm4962.com:3478", "stun:avm4962.com:5349"],
-  },
-  { urls: ["stun:ss-turn1.xirsys.com"] },
-  {
-    username: "TuR9Us3r",
-    credential:
-      "T!W779M?Vh#5ewJcT=L4v6NcUE*=4+-*fcy+gLAS$^WJgg+wq%?ca^Br@D%Q2MVpyV2sqTcHmUAdP2z4#=S8FAb*3LKGT%W^4R%h5Tdw%D*zvvdWTzSA@ytvEH!G#^99QmW3*5ps^jv@aLdNSfyYKBUS@CJ#hxSp5PRnzP+_YDcJHN&ng2Q_g6Z!+j_3RD%vc@P4g%tFuAuX_dz_+AQNe$$$%w7A4sW?CDr87ca^rjFBGV??JR$!tCSnZdAJa6P8",
-    urls: [
-      "turn:avm4962.com:3478?transport=udp",
-      "turn:avm4962.com:5349?transport=tcp",
-    ],
-  },
-  {
-    username:
-      "ZyUlEkJOyQDmJFZ0nkKcAKmrrNayVm-rutt8RNHa1EQe_NQADY6Rk4sM2zVstYo_AAAAAF9xt7VhbGl2YXRlY2g=",
-    credential: "820f7cf4-0173-11eb-ad8b-0242ac140004",
-    urls: [
-      "turn:ss-turn1.xirsys.com:80?transport=udp",
-      "turn:ss-turn1.xirsys.com:3478?transport=udp",
-      "turn:ss-turn1.xirsys.com:80?transport=tcp",
-      "turn:ss-turn1.xirsys.com:3478?transport=tcp",
-      "turns:ss-turn1.xirsys.com:443?transport=tcp",
-      "turns:ss-turn1.xirsys.com:5349?transport=tcp",
-    ],
-  },
-];
+import { getAllSavedFiles } from "../../idbUtils/getAllSavedFiles/getAllSavedFiles";
+
+import redux from "../../utils/manageRedux";
+
+import { iceServers } from "../iceServers/iceServers";
+
+import { requestReceiverToSetupPC } from "../requestReceiverToSetupPC/requestReceiverToSetupPC";
 
 export const initializeWebRTC = function (channel, machineId) {
   return new Promise((resolve, reject) => {
@@ -94,17 +77,11 @@ export const initializeWebRTC = function (channel, machineId) {
 
         dataChannel.onmessage = async (event) => {
           const message = event.data;
-          // console.log("Got message: ", message);
-          console.log("Got message");
+          console.log("Got message: ", JSON.parse(message));
+          // console.log("Got message");
           try {
             const receivedMessage = JSON.parse(message);
-            if (receivedMessage.isChunk) {
-              await alivaWebRTC.saveChunkInMemory(
-                receivedMessage.batchHash,
-                receivedMessage.chunkToSend
-              );
-              return;
-            } else if (receivedMessage.isConfirmation) {
+            if (receivedMessage.isConfirmation) {
               const {
                 batchHash,
                 fileName,
@@ -114,7 +91,7 @@ export const initializeWebRTC = function (channel, machineId) {
               } = receivedMessage;
               console.log("Confirmation message: ", message);
               const inMemoryBatchChunks = alivaWebRTC.chunks[batchHash];
-              if (inMemoryBatchChunks.confirmation) {
+              if (inMemoryBatchChunks?.confirmation) {
                 dataChannel.send(
                   JSON.stringify({
                     isTotalBatchReceived: true,
@@ -172,19 +149,15 @@ export const initializeWebRTC = function (channel, machineId) {
                     );
                     await saveBatchBlobToIdb(batchHash, batchBlob);
                     alivaWebRTC.chunks[batchHash] = { confirmation: true };
-                    const status =
-                      endBatchIndex !== fileSize
-                        ? `<h2>
+                    const status = `<h2>
       ${(endBatchIndex / 1000 / 1000).toFixed(
         2
       )} MB has been saved ${fileName} file out of ${(
-                            fileSize /
-                            1000 /
-                            1000
-                          ).toFixed(2)} MB 
-        </h2>`
-                        : `<h2>
-        All File Received Successfully ${fileName}</h2>`;
+                      fileSize /
+                      1000 /
+                      1000
+                    ).toFixed(2)} MB 
+        </h2>`;
                     setStatus(status);
                   }
                 } else {
@@ -195,7 +168,6 @@ export const initializeWebRTC = function (channel, machineId) {
                     inMemoryBatchChunks
                   );
                 }
-                console.log("missingBatchChunks: actual", missingChunks);
                 if (missingChunks.length > 0) {
                   isTotalBatchReceived = false;
                 }
@@ -214,8 +186,23 @@ export const initializeWebRTC = function (channel, machineId) {
               dataChannel.send(JSON.stringify({ isBatchExists }));
             } else if (receivedMessage.requestFile) {
               const { fileName } = receivedMessage;
-              console.log("requestFile received", fileName);
+              console.log("requestFile received second", fileName);
               await sendFile(fileName);
+            } else if (receivedMessage.allFileSend) {
+              const { fileName } = receivedMessage;
+              await handleAllFileReceived(fileName);
+              const files = await getAllSavedFiles();
+              redux.storeState({ machineId, idbFiles: files });
+              setStatus(`<h2>All File Received Successfully ${fileName}</h2>`);
+              console.log("allFileSend received", fileName);
+              dataChannel.send(JSON.stringify({ isReceived: true }));
+            } else if (receivedMessage.setupPcRequest) {
+              const { fileName } = receivedMessage;
+              console.log("setupPcRequest received", fileName);
+              await alivaWebRTC.setupFilePeerConnection(fileName);
+              dataChannel.send(
+                JSON.stringify({ setupPcRequest: true, fileName })
+              );
             }
           } catch (error) {
             console.log("Got message on error: ", message);

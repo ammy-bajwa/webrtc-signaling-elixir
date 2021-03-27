@@ -5,6 +5,7 @@ const {
   MOVE_TO_IDB_STATE,
   REMOVE_FILE_FROM_IDB_STATE,
   SAVE_RECEIVED_METADATA_IN_STATE,
+  CLEAR_STATE,
 } = fileActionTypes;
 export const fileActions = {
   storeMachineIDAndFiles: function (payload) {
@@ -35,6 +36,11 @@ export const fileActions = {
     return {
       type: SAVE_RECEIVED_METADATA_IN_STATE,
       payload,
+    };
+  },
+  clearDataInState: function () {
+    return {
+      type: CLEAR_STATE
     };
   },
 };

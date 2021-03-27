@@ -1,8 +1,10 @@
 export const sendFilesMetadata = function (idbFiles, alivaWebRTC) {
   return new Promise(async (resolve, reject) => {
-    const dataChannel = await alivaWebRTC.createDataChannel(
-      "metadataDataChannel"
-    );
+    let dataChannel =
+      alivaWebRTC.dataChannels["metadataDataChannel"]?.dataChannel;
+    if (!dataChannel) {
+      dataChannel = await alivaWebRTC.createDataChannel("metadataDataChannel");
+    }
     for (let index = 0; index < idbFiles.length; index++) {
       const { name, size, batchesMetaData, fileHash } = idbFiles[index];
       if (size < 10000000) {

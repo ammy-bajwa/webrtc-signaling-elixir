@@ -7,6 +7,7 @@ const {
   moveFileToidbState,
   removeFileFromidbState,
   saveMetadataInState,
+  clearDataInState,
 } = fileActions;
 
 const manageRedux = {
@@ -25,6 +26,9 @@ const manageRedux = {
   },
   saveReceivedMetadataInState: function (data) {
     store.dispatch(saveMetadataInState({ data }));
+  },
+  cleanState: function () {
+    store.dispatch(clearDataInState());
   },
 };
 

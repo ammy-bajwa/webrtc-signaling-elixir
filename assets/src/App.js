@@ -2,7 +2,11 @@ import { Component } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { connect } from "react-redux";
 
+import DisplayIdbFiles from "./components/displayIdbFiles";
+
 import DisplayFiles from "./components/displayFiles";
+
+import MetadataFilesIdb from "./components/metadataFilesIdb";
 
 import "./App.css";
 import { alivaWS } from "./socket/index";
@@ -23,9 +27,9 @@ class App extends Component {
     console.log("datasycs", alivaWebRTC);
     const machineId = uuidv4();
     try {
-      await alivaWS.initializeSocket("ws://localhost:4000/socket");
+      await alivaWS.initializeSocket("/socket");
     } catch (error) {
-      await alivaWS.initializeSocket("ws://localhost:4000/socket");
+      await alivaWS.initializeSocket("/socket");
     }
     await alivaWebRTC.initializeWebRTC(alivaWS.channel, machineId);
     await alivaWebRTC.addWebrtcListener(
@@ -39,8 +43,7 @@ class App extends Component {
   }
 
   handleWebRtcConnection = async () => {
- 
-    await alivaWebRTC.createDataChannel("dc")
+    await alivaWebRTC.createDataChannel("dc");
   };
 
   cleanDBs = () => {
@@ -51,6 +54,7 @@ class App extends Component {
           window.indexedDB.deleteDatabase(r[i].name);
       })
       .then(() => {
+        redux.cleanState();
         alert("All data cleared.");
       });
   };
@@ -92,15 +96,6 @@ class App extends Component {
           >
             Connect with webrtc
           </button>
-
-          {/* <button
-            type="button"
-            className="btn btn-dark m-2"
-            onClick={this.handleWebRtcConnection}
-          >
-            Send Files Metadata
-          </button> */}
-
           <button
             type="button"
             className="btn btn-dark m-2"
@@ -110,15 +105,21 @@ class App extends Component {
           </button>
         </div>
         <div>
-          <h2>Files Present In IDB</h2>
-          <DisplayFiles files={idbFiles} isDelete={true} />
-          <button
-            type="button"
-            className="btn btn-outline-dark m-2"
-            onClick={this.handleSyncMetadata}
-          >
-            Sync Metadata
-          </button>
+          <div>
+            <h2>Files to receive</h2>
+            <MetadataFilesIdb files={idbFiles} />
+          </div>
+          <div>
+            <h2>Files Present In IDB</h2>
+            <DisplayIdbFiles files={idbFiles} />
+            <button
+              type="button"
+              className="btn btn-outline-dark m-2"
+              onClick={this.handleSyncMetadata}
+            >
+              Sync Metadata
+            </button>
+          </div>
         </div>
         <div>
           <h2>Uploaded Files Will Be Here</h2>

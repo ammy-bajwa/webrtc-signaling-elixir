@@ -9,7 +9,16 @@ import { sendBatchOfChunks } from "../sendBatchOfChunks/sendBatchOfChunks";
 import { waitForBatchConfirmation } from "../waitForBatchConfirmation/waitForBatchConfirmation";
 
 import { isBatchAlreadyExistOnReceiver } from "../isBatchAlreadyExistOnReceiver/isBatchAlreadyExistOnReceiver";
+
 import { setStatus } from "../../status/status";
+
+import { setupFilePeerConnection } from "../setupFilePeerConnection/setupFilePeerConnection";
+
+import { requestReceiverToSetupPC } from "../requestReceiverToSetupPC/requestReceiverToSetupPC.js";
+
+import { isAlreadyConnected } from "../isAlreadyConnected/isAlreadyConnected.js";
+
+import { allFileSendSignal } from "../allFileSendSignal/allFileSendSignal.js";
 
 export const sendFile = (fileName) => {
   return new Promise(async (resolve, reject) => {
@@ -17,14 +26,27 @@ export const sendFile = (fileName) => {
       const fileMetadata = await getFileMetadataFromIndexedDB(fileName);
       const batchesMetadata = fileMetadata["batchesMetaData"];
       const batchesKeys = Object.keys(batchesMetadata);
-      const currentDcCount = Object.keys(alivaWebRTC.dataChannels).length;
-      console.log("batchesKeys: ", batchesKeys);
-      setStatus("<h2>Setting up datachannels...</h2>");
-      if (currentDcCount < 4) {
-        await alivaWebRTC.settingUpDatachannels(400);
-      } else {
-        console.log(`${currentDcCount} data channels already exists`);
+      // Setup new peer connection for the transmission of file
+      setStatus("<h2>Setting up peerconnection and datachannels...</h2>");
+
+      const isPcAlreadyExists = await isAlreadyConnected(fileName);
+
+      if (!isPcAlreadyExists) {
+        await alivaWebRTC.setupFilePeerConnection(fileName);
+        // Request other for to create peerconnection for file
+        await requestReceiverToSetupPC(fileName);
+        // After successfully creating peerconnection on receiver create on in sender
+
+        await alivaWebRTC.initializeFileDataChannels(fileName);
       }
+
+      // const currentDcCount = Object.keys(alivaWebRTC.dataChannels).length;
+      // console.log("batchesKeys: ", batchesKeys);
+      // if (currentDcCount < 4) {
+      //   await alivaWebRTC.settingUpDatachannels(400);
+      // } else {
+      //   console.log(`${currentDcCount} data channels already exists`);
+      // }
       for (let key = 0; key < batchesKeys.length; key++) {
         const batchKey = batchesKeys[key];
         const { batchHash, totalChunksCount, endBatchIndex } = batchesMetadata[
@@ -41,7 +63,7 @@ export const sendFile = (fileName) => {
         if (!isBatchExists) {
           const fileSize = fileMetadata["fileSize"];
           setStatus("<h2>File chunks loading in memory and sending...</h2>");
-          await sendBatchOfChunks(batchOfChunksIDB, batchHash);
+          await sendBatchOfChunks(fileName, batchOfChunksIDB, batchHash);
           await waitForBatchConfirmation(
             fileName,
             batchKey,
@@ -64,7 +86,9 @@ export const sendFile = (fileName) => {
           console.log("Batch is sended: ", batchKey);
         }
       }
+      await allFileSendSignal(fileName);
       resolve(true);
+      console.log("All file send: ", fileName);
     } catch (error) {
       reject(error);
     }

@@ -5,6 +5,7 @@ const {
   MOVE_TO_IDB_STATE,
   REMOVE_FILE_FROM_IDB_STATE,
   SAVE_RECEIVED_METADATA_IN_STATE,
+  CLEAR_STATE,
 } = fileActionTypes;
 const initState = {
   machineId: "",
@@ -46,7 +47,7 @@ export default function todos(state = initState, action) {
       let isAlreadyPresend = false;
       const receivedMetadata = action.payload.data;
       const updatedIdbFiles = state.idbFiles.map((fileMetadata) => {
-        if (fileMetadata.fileName === receivedMetadata.fileName) {
+        if (fileMetadata.name === receivedMetadata.name) {
           fileMetadata.batchesMetaData = {
             ...fileMetadata.batchesMetaData,
             ...receivedMetadata.batchesMetaData,
@@ -58,7 +59,7 @@ export default function todos(state = initState, action) {
       if (!isAlreadyPresend) {
         return {
           ...state,
-          idbFiles: [receivedMetadata],
+          idbFiles: state.idbFiles.concat([receivedMetadata]),
         };
       } else {
         return {
@@ -66,6 +67,12 @@ export default function todos(state = initState, action) {
           idbFiles: updatedIdbFiles,
         };
       }
+    case CLEAR_STATE:
+      return {
+        machineId: "",
+        idbFiles: [],
+        files: [],
+      };
     default:
       return state;
   }

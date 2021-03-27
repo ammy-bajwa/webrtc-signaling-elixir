@@ -19,9 +19,7 @@ export const findInMemoryMissingBatchChunks = function (
       let missingChunks = [];
       let startHelperIndex = 0;
       let endHelperIndex = difference;
-      console.log("inMemoryBatchChunks: ", inMemoryBatchChunks);
       for (let index = 0; index < totalChunksCount; index++) {
-        console.log("totalChunksCount: ", totalChunksCount);
         const key = `${startHelperIndex}__${endHelperIndex}`;
         startHelperIndex = endHelperIndex;
         endHelperIndex = endHelperIndex + difference;

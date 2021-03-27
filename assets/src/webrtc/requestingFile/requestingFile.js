@@ -7,5 +7,6 @@ export const requestingFile = async (fileName) => {
     fileName,
   };
   requestingFileObj = JSON.stringify(requestingFileObj);
+  console.log("File request send: ", fileName);
   dataChannel.send(requestingFileObj);
 };
