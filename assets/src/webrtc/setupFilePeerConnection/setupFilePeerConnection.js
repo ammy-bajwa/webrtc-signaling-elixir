@@ -8,6 +8,16 @@ import store from "../../redux/store";
 
 import { addWebrtcListenerForFile } from "../addWebrtcListenerForFile/addWebrtcListenerForFile";
 
+import { handleBatchConfirmation } from "../handleBatchConfirmation/handleBatchConfirmation";
+
+import { handleAllFileReceived } from "../../idbUtils/handleAllFileReceived/handleAllFileReceived";
+
+import { getAllSavedFiles } from "../../idbUtils/getAllSavedFiles/getAllSavedFiles";
+
+import { setStatus } from "../../status/status";
+
+import redux from "../../utils/manageRedux";
+
 export const setupFilePeerConnection = function (fileName) {
   return new Promise(async (resolve, reject) => {
     try {
@@ -20,6 +30,7 @@ export const setupFilePeerConnection = function (fileName) {
         peerConnection,
         dataChannels: {},
       };
+
       const { channel } = alivaWS;
       await addWebrtcListenerForFile(
         channel,
@@ -43,16 +54,26 @@ export const setupFilePeerConnection = function (fileName) {
 
         dataChannel.onerror = function (error) {
           // console.log("dc close");
-          this.filesPeerConnections[fileName].dataChannels[label] = null;
         };
 
         dataChannel.onmessage = async (event) => {
           const message = event.data;
-          console.log("file chunk received");
+          console.log("message received fileDC");
           try {
             const receivedMessage = JSON.parse(message);
-            if (receivedMessage.isChunk) {
+            if (receivedMessage.isConfirmation) {
+              console.log("isConfirmation: ", receivedMessage);
+              await handleBatchConfirmation(dataChannel, receivedMessage);
+              return;
+            } else if (receivedMessage.allFileSend) {
+              await handleAllFileReceived(fileName);
+              const files = await getAllSavedFiles();
+              redux.storeState({ machineId, idbFiles: files });
+              setStatus(`<h2>All File Received Successfully ${fileName}</h2>`);
+              console.log("allFileSend received", fileName, dataChannel.label);
+            } else if (receivedMessage.isChunk) {
               await alivaWebRTC.saveChunkInMemory(
+                fileName,
                 receivedMessage.batchHash,
                 receivedMessage.chunkToSend
               );
@@ -79,6 +100,7 @@ export const setupFilePeerConnection = function (fileName) {
           channel.push(`channel:sendIceFilePC`, {
             candidate: JSON.stringify(event.candidate),
             sender: machineId,
+            fileName,
           });
         }
       };

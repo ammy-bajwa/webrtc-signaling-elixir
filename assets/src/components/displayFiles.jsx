@@ -41,6 +41,7 @@ const DisplayFiles = ({ files, isDelete }) => {
       await requestingFile(fileName);
     }
   };
+
   return (
     <div className="d-flex justify-content-center flex-wrap m-4">
       {myFiles.length === 0 && <h3 className="text-info">No File</h3>}

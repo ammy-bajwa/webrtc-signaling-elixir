@@ -9,7 +9,11 @@ export const batchConfirmationMemory = function (
 ) {
   return new Promise(async (resolve, reject) => {
     try {
-      const inMemoryBatch = alivaWebRTC.chunks[batchHash];
+      const inMemoryBatch = alivaWebRTC.chunks[fileName][batchHash];
+      if (!inMemoryBatch) {
+        console.log("alivaWebRTC: ", alivaWebRTC);
+        debugger;
+      }
       const { totalChunksCount } = await getBatchMetadata(
         fileName,
         batchHash,

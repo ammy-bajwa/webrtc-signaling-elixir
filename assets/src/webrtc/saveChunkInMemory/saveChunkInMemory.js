@@ -1,27 +1,29 @@
 import { setStatus } from "../../status/status";
 
-export const saveChunkInMemory = function (batchHash, chunk) {
+export const saveChunkInMemory = function (fileName, batchHash, chunk) {
   return new Promise((resolve, reject) => {
     try {
       const { startSliceIndex, endSliceIndex } = chunk;
-      let batchInMemory = this.chunks[`${batchHash}`];
-      if (!batchInMemory) {
-        this.chunks[`${batchHash}`] = {};
+      let fileChunks = this.chunks[fileName];
+      if (!fileChunks) {
+        this.chunks[fileName] = {};
       }
-      let chunkInMemory = this.chunks[`${batchHash}`][
+      let batchInMemory = this.chunks[fileName][`${batchHash}`];
+      if (!batchInMemory) {
+        this.chunks[fileName][`${batchHash}`] = {};
+      }
+      let chunkInMemory = this.chunks[fileName][`${batchHash}`][
         `${startSliceIndex}__${endSliceIndex}`
       ];
       if (!chunkInMemory) {
-        this.chunks[`${batchHash}`][
+        this.chunks[fileName][`${batchHash}`][
           `${startSliceIndex}__${endSliceIndex}`
         ] = {};
       }
-      this.chunks[`${batchHash}`][
+      this.chunks[fileName][`${batchHash}`][
         `${startSliceIndex}__${endSliceIndex}`
       ] = chunk;
-      setStatus(
-        `<h2>File chunks saving in memory...</h2>`
-      );
+      setStatus(`<h2>File chunks saving in memory...</h2>`);
       resolve(true);
     } catch (error) {
       reject(error);

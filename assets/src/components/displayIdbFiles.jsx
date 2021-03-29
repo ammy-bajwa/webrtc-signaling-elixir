@@ -2,15 +2,15 @@ import { useState, useEffect } from "react";
 import { getFileBatchesFromIDB } from "../idbUtils/getFileBatches/getFileBatches";
 import Modal from "./modal";
 import { deleteFileFromIDB } from "../idbUtils/deleteFileFromIDB/deleteFileFromIDB";
-// import { sendFile } from "../webrtc/sendFile/sendFile";
-
-import { requestingFile } from "../webrtc/requestingFile/requestingFile";
+import { alivaWebRTC } from "../webrtc/index";
+import { sendFilesMetadata } from "../webrtc/sendFilesMetadata/sendFilesMetadata";
+import { connect } from "react-redux";
 
 import redux from "../utils/manageRedux";
 
 import { setStatus } from "../status/status";
 
-const DisplayIdbFiles = function ({ files }) {
+const DisplayIdbFiles = function ({ files, fileState }) {
   const [modalIsOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState("");
 
@@ -75,6 +75,29 @@ const DisplayIdbFiles = function ({ files }) {
     }
     return false;
   };
+  const filterFileforMetaData = (idbFiles, fileHash) => {
+    return idbFiles.filter((file) => file.fileHash === fileHash);
+  };
+  const handleFileSyncMetadata = async (fileHash) => {
+    const { idbFiles } = fileState;
+    console.log("file sync", idbFiles);
+    console.log("file sync", fileHash);
+    const webRTCConnState = alivaWebRTC.peerConnection.connectionState;
+    if (idbFiles.length <= 0) {
+      alert("Please upload a file first");
+      return;
+    } else if (webRTCConnState !== "connected") {
+      alert("Please connect webrtc first");
+      return;
+    } else {
+      console.log(filterFileforMetaData(idbFiles, fileHash));
+      await sendFilesMetadata(
+        filterFileforMetaData(idbFiles, fileHash),
+        alivaWebRTC
+      );
+      return;
+    }
+  };
   return (
     <div className="d-flex justify-content-center flex-wrap m-4">
       {files.length === 0 && <h3 className="text-info">No File</h3>}
@@ -87,6 +110,13 @@ const DisplayIdbFiles = function ({ files }) {
             {!isReceived && !isOnlyMetadata && (
               <span className="border border-dark rounded m-2 p-3">
                 {name}--<b>{(size / 1000 / 1000).toFixed(2)}_MB</b>
+                <button
+                  type="button"
+                  className="btn btn-primary m-2"
+                  onClick={() => handleFileSyncMetadata(fileHash)}
+                >
+                  Sync
+                </button>
                 <button
                   type="button"
                   className="btn btn-danger m-2"
@@ -116,5 +146,10 @@ const DisplayIdbFiles = function ({ files }) {
     </div>
   );
 };
+const mapStateToProps = function (state) {
+  return {
+    fileState: state.fileReducer,
+  };
+};
 
-export default DisplayIdbFiles;
+export default connect(mapStateToProps)(DisplayIdbFiles);

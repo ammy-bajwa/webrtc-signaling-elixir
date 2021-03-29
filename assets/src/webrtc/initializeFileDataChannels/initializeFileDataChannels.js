@@ -7,7 +7,7 @@ export const initializeFileDataChannels = function (fileName) {
       if (isDcAlreadyExists) {
         resolve(true);
       } else {
-        for (let index = 0; index <= 400; index++) {
+        for (let index = 0; index <= 100; index++) {
           const dataChannelName = `dc_${index}`;
           const dataChannel = await peerConnection.createDataChannel(
             dataChannelName
@@ -15,6 +15,16 @@ export const initializeFileDataChannels = function (fileName) {
           await this.setupSingleFileDataChannel(dataChannel);
           fileDataChannels[dataChannelName] = { dataChannel };
         }
+
+        for (let index = 0; index <= 1; index++) {
+          const dataChannelName = `shareInfo_${index}`;
+          const dataChannel = await peerConnection.createDataChannel(
+            dataChannelName
+          );
+          await this.setupSingleFileDataChannel(dataChannel);
+          fileDataChannels[dataChannelName] = { dataChannel };
+        }
+
         this.filesPeerConnections[fileName].dataChannels = fileDataChannels;
         resolve(true);
       }

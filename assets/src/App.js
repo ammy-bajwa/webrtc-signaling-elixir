@@ -27,9 +27,9 @@ class App extends Component {
     console.log("datasycs", alivaWebRTC);
     const machineId = uuidv4();
     try {
-      await alivaWS.initializeSocket("/socket");
+      await alivaWS.initializeSocket("ws://localhost:4000/socket");
     } catch (error) {
-      await alivaWS.initializeSocket("/socket");
+      await alivaWS.initializeSocket("ws://localhost:4000/socket");
     }
     await alivaWebRTC.initializeWebRTC(alivaWS.channel, machineId);
     await alivaWebRTC.addWebrtcListener(
@@ -44,6 +44,8 @@ class App extends Component {
 
   handleWebRtcConnection = async () => {
     await alivaWebRTC.createDataChannel("dc");
+    await alivaWebRTC.createDataChannel("request_file");
+    await alivaWebRTC.createDataChannel("confirmation");
   };
 
   cleanDBs = () => {
@@ -69,6 +71,7 @@ class App extends Component {
 
   handleSyncMetadata = async () => {
     const { idbFiles } = this.props.fileState;
+    console.log("file sync", idbFiles);
     const webRTCConnState = alivaWebRTC.peerConnection.connectionState;
     if (idbFiles.length <= 0) {
       alert("Please upload a file first");

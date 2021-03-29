@@ -6,7 +6,7 @@ export const addWebrtcListenerForFile = function (
 ) {
   return new Promise((resolve, reject) => {
     try {
-      channel.on(`channel:onOfferFilePC`, async (data) => {
+      channel.on(`channel:onOfferFilePC__${fileName}`, async (data) => {
         const { offer, sender, fileName: receiverFileName } = data;
         if (sender !== machineId && fileName === receiverFileName) {
           console.log("SetRemote Offer");
@@ -24,7 +24,7 @@ export const addWebrtcListenerForFile = function (
         }
       });
 
-      channel.on(`channel:onAnswerFilePC`, async (data) => {
+      channel.on(`channel:onAnswerFilePC__${fileName}`, async (data) => {
         const { answer, sender } = data;
         if (sender !== machineId) {
           console.log("SetRemote Answer");
@@ -35,7 +35,7 @@ export const addWebrtcListenerForFile = function (
         }
       });
 
-      channel.on(`channel:onCandidateFilePC`, async (data) => {
+      channel.on(`channel:onCandidateFilePC__${fileName}`, async (data) => {
         const { candidate, sender } = data;
         console.log("Candidate received: ", candidate);
         if (sender !== machineId) {

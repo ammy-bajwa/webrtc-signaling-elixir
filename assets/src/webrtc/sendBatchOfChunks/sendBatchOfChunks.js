@@ -9,11 +9,18 @@ export const sendBatchOfChunks = async (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
+      console.log(
+        "fileName chunks sending :",
+        fileName,
+        alivaWebRTC.filesPeerConnections[fileName],
+        Object.keys(batchOfChunksIDB).length
+      );
       const allDataChannels =
         alivaWebRTC.filesPeerConnections[fileName].dataChannels;
       const dataChannelsKeys = Object.keys(allDataChannels);
       let dataChannelsHelper = 0;
       for (const chunkKey in batchOfChunksIDB) {
+        console.log("*chunk send");
         if (Object.hasOwnProperty.call(batchOfChunksIDB, chunkKey)) {
           const [startSliceIndex, endSliceIndex] = chunkKey.split("__");
           const blobChunk = batchOfChunksIDB[chunkKey];
@@ -36,6 +43,7 @@ export const sendBatchOfChunks = async (
       }
       resolve(true);
     } catch (error) {
+      debugger;
       reject(error);
     }
   });

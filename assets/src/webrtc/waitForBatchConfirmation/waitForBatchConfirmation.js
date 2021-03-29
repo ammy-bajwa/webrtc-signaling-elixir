@@ -13,10 +13,8 @@ export const waitForBatchConfirmation = (
   return new Promise(async (resolve, reject) => {
     try {
       let dataChannel =
-        alivaWebRTC.dataChannels["batchConfirmation"]?.dataChannel;
-      if (!dataChannel) {
-        dataChannel = await alivaWebRTC.createDataChannel("batchConfirmation");
-      }
+        alivaWebRTC.filesPeerConnections[fileName].dataChannels["shareInfo_1"]
+          .dataChannel;
       let batchConfirmationPayload = {
         isConfirmation: true,
         batchKey,
@@ -26,7 +24,7 @@ export const waitForBatchConfirmation = (
         fileSize,
       };
       batchConfirmationPayload = JSON.stringify(batchConfirmationPayload);
-      let doesChange = false;
+      let isConfirmed = false;
       dataChannel.onmessage = async (event) => {
         try {
           const { batchHash, isTotalBatchReceived, missingChunks } = JSON.parse(
@@ -36,6 +34,7 @@ export const waitForBatchConfirmation = (
             isTotalBatchReceived,
             batchHash,
             missingChunks,
+            fileName,
           });
           if (!isTotalBatchReceived) {
             const resendChunkObj = {};
@@ -47,19 +46,20 @@ export const waitForBatchConfirmation = (
                 resendChunkObj[chunkKey] = resendChunk;
               }
             }
-            console.log("Inside batch confirmation");
             console.log("Resending batch: ", resendChunkObj);
             console.log("Resending batch hash: ", batchHash);
+            console.log("Resending fileName: ", fileName);
             await sendBatchOfChunks(fileName, resendChunkObj, batchHash);
             dataChannel.send(batchConfirmationPayload);
+            console.log("Confirmation resend: ", fileName);
             setTimeout(() => {
-              if (!doesChange) {
+              if (!isConfirmed) {
                 dataChannel.send(batchConfirmationPayload);
               }
-            }, 3000);
+            }, 4000);
             // resolve(true);
           } else {
-            doesChange = true;
+            isConfirmed = true;
             resolve(true);
           }
         } catch (error) {

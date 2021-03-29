@@ -4,8 +4,6 @@ import { setStatus } from "../../status/status";
 
 import { sendFile } from "../sendFile/sendFile";
 
-import { allFileSendSignal } from "../allFileSendSignal/allFileSendSignal";
-
 export const createDataChannel = function (dataChannelName) {
   return new Promise(async (resolve, reject) => {
     const dcOptions = {
@@ -45,8 +43,11 @@ export const createDataChannel = function (dataChannelName) {
         let receivedMessage = JSON.parse(event.data);
         if (receivedMessage.requestFile) {
           const { fileName } = receivedMessage;
-          console.log("requestFile received", fileName);
+          console.log("requestFile received 2->>>>>>:", fileName);
           await sendFile(fileName);
+        } else if (receivedMessage.pcSetupConfirmation) {
+          const { fileName } = receivedMessage;
+          console.log("pcSetupConfirmation received", fileName);
         }
       } catch (error) {
         console.error(error);
