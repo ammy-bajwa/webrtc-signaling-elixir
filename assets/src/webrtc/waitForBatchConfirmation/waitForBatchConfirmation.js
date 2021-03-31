@@ -56,6 +56,9 @@ export const waitForBatchConfirmation = (
               await sendBatchOfChunks(fileName, resendChunkObj, batchHash);
               dataChannel.send(batchConfirmationPayload);
               console.log("Confirmation resend: ", fileName);
+            } else if (missingChunks.length === 0) {
+              await sendBatchOfChunks(fileName, batchOfChunksIDB, batchHash);
+              dataChannel.send(batchConfirmationPayload);
             }
           } else {
             isAllOk = true;
