@@ -43,7 +43,7 @@ export const setupFilePeerConnection = function (fileName) {
         const dataChannel = event.channel;
         const { label } = dataChannel;
         dataChannel.onopen = () => {
-          console.log("File datachannel open");
+          // console.log("File datachannel open: ");
           const dataChannelObj = {
             dataChannel,
           };
@@ -58,13 +58,12 @@ export const setupFilePeerConnection = function (fileName) {
 
         dataChannel.onmessage = async (event) => {
           const message = event.data;
-          console.log("message received fileDC");
           try {
+            console.log("message received fileDC: ");
             const receivedMessage = JSON.parse(message);
             if (receivedMessage.isConfirmation) {
               console.log("isConfirmation: ", receivedMessage);
               await handleBatchConfirmation(dataChannel, receivedMessage);
-              return;
             } else if (receivedMessage.allFileSend) {
               await handleAllFileReceived(fileName);
               const files = await getAllSavedFiles();

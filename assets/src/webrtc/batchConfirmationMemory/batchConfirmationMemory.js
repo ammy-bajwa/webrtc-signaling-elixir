@@ -14,13 +14,13 @@ export const batchConfirmationMemory = function (
         console.log("alivaWebRTC: ", alivaWebRTC);
         debugger;
       }
-      const { totalChunksCount } = await getBatchMetadata(
+      const batchMetadata = await getBatchMetadata(
         fileName,
         batchHash,
         batchKey
       );
       const inMemoryBatchChunksCount = Object.keys(inMemoryBatch).length;
-      if (totalChunksCount === inMemoryBatchChunksCount) {
+      if (batchMetadata?.totalChunksCount === inMemoryBatchChunksCount) {
         resolve(true);
       } else {
         resolve(false);

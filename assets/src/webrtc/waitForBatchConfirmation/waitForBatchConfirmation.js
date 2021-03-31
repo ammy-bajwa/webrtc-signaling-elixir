@@ -12,9 +12,9 @@ export const waitForBatchConfirmation = (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let dataChannel =
-        alivaWebRTC.filesPeerConnections[fileName].dataChannels["shareInfo_1"]
-          .dataChannel;
+      const peerConnection =
+        alivaWebRTC.filesPeerConnections[fileName].peerConnection;
+      const dataChannel = await peerConnection.createDataChannel(batchHash);
       let batchConfirmationPayload = {
         isConfirmation: true,
         batchKey,
@@ -24,7 +24,7 @@ export const waitForBatchConfirmation = (
         fileSize,
       };
       batchConfirmationPayload = JSON.stringify(batchConfirmationPayload);
-      let isConfirmed = false;
+      let isAllOk = false;
       dataChannel.onmessage = async (event) => {
         try {
           const { batchHash, isTotalBatchReceived, missingChunks } = JSON.parse(
@@ -46,27 +46,35 @@ export const waitForBatchConfirmation = (
                 resendChunkObj[chunkKey] = resendChunk;
               }
             }
-            console.log("Resending batch: ", resendChunkObj);
-            console.log("Resending batch hash: ", batchHash);
-            console.log("Resending fileName: ", fileName);
-            await sendBatchOfChunks(fileName, resendChunkObj, batchHash);
-            dataChannel.send(batchConfirmationPayload);
-            console.log("Confirmation resend: ", fileName);
-            setTimeout(() => {
-              if (!isConfirmed) {
-                dataChannel.send(batchConfirmationPayload);
-              }
-            }, 4000);
-            // resolve(true);
+            console.log(
+              "Resending batch: ",
+              fileName,
+              batchHash,
+              missingChunks
+            );
+            if (missingChunks.length > 0) {
+              await sendBatchOfChunks(fileName, resendChunkObj, batchHash);
+              dataChannel.send(batchConfirmationPayload);
+              console.log("Confirmation resend: ", fileName);
+            }
           } else {
-            isConfirmed = true;
+            isAllOk = true;
             resolve(true);
           }
         } catch (error) {
           console.error(error);
         }
       };
-      dataChannel.send(batchConfirmationPayload);
+      dataChannel.onopen = () => {
+        setTimeout(() => {
+          if (!isAllOk) {
+            dataChannel.send(batchConfirmationPayload);
+            console.log("Confirmation resend timeout: ", fileName);
+          }
+        }, 8000);
+        console.log("Confirmation dc open: ", fileName);
+        dataChannel.send(batchConfirmationPayload);
+      };
     } catch (error) {
       reject(error);
     }

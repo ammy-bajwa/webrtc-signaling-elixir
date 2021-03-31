@@ -43,20 +43,20 @@ export const handleBatchConfirmation = (dataChannel, message) => {
           batchHash,
           batchKey
         );
-        if (!isTotalBatchReceived) {
-          for (let index = 0; index <= 10; index++) {
-            console.log("waiting....", index);
-            await causeDelay(500);
-            isTotalBatchReceived = await batchConfirmationMemory(
-              fileName,
-              batchHash,
-              batchKey
-            );
-            if (isTotalBatchReceived) {
-              break;
-            }
-          }
-        }
+        // if (!isTotalBatchReceived) {
+        //   for (let index = 0; index <= 10; index++) {
+        //     console.log("waiting....", index);
+        //     await causeDelay(500);
+        //     isTotalBatchReceived = await batchConfirmationMemory(
+        //       fileName,
+        //       batchHash,
+        //       batchKey
+        //     );
+        //     if (isTotalBatchReceived) {
+        //       break;
+        //     }
+        //   }
+        // }
         if (isTotalBatchReceived) {
           setStatus(`<h2>Validating batch ${batchKey}</h2>`);
           const batchBlob = await convertInMemoryBatchToBlob(
@@ -87,14 +87,15 @@ export const handleBatchConfirmation = (dataChannel, message) => {
             alivaWebRTC.chunks[fileName][batchHash] = {
               confirmation: true,
             };
-            const status = `<h2>
-${(endBatchIndex / 1000 / 1000).toFixed(
-  2
-)} MB has been saved ${fileName} file out of ${(fileSize / 1000 / 1000).toFixed(
+            setStatus(`<h2>
+            ${(endBatchIndex / 1000 / 1000).toFixed(
               2
-            )} MB 
-</h2>`;
-            setStatus(status);
+            )} MB has been saved ${fileName} file out of ${(
+              fileSize /
+              1000 /
+              1000
+            ).toFixed(2)} MB 
+            </h2>`);
           }
         } else {
           missingChunks = await findInMemoryMissingBatchChunks(

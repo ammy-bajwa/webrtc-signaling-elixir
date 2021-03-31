@@ -16,7 +16,7 @@ const customStyles = {
 // Make sure to bind modal to your appElement (http://reactcommunity.org/react-modal/accessibility/)
 // Modal.setAppElement('#yourAppElement')
 
-export default function App({ modalIsOpen, file, closeModal }) {
+export default function App({ modalIsOpen, file, closeModal, fileType }) {
   const videoOptions = {
     autoplay: false,
     controls: true,
@@ -37,7 +37,7 @@ export default function App({ modalIsOpen, file, closeModal }) {
         contentLabel="Video"
         ariaHideApp={false}
       >
-        <VideoPlayer {...videoOptions} />
+        {fileType === "video"?<VideoPlayer {...videoOptions} />:<img src={file}/>}
       </Modal>
     </div>
   );

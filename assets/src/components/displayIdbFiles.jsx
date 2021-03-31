@@ -13,13 +13,31 @@ import { setStatus } from "../status/status";
 const DisplayIdbFiles = function ({ files, fileState }) {
   const [modalIsOpen, setIsOpen] = useState(false);
   const [file, setFile] = useState("");
+  const [fileType, setFileType] = useState("video");
 
   const getVideo = async (batchesMetaData) => {
     let getFile = await getFileBatchesFromIDB(batchesMetaData);
     let fileURL = await URL.createObjectURL(getFile);
 
     setFile(fileURL);
+    setFileType("video");
     openModal();
+  };
+  const getImage = async (batchesMetaData) => {
+    let getFile = await getFileBatchesFromIDB(batchesMetaData);
+    let fileURL = await URL.createObjectURL(getFile);
+
+    setFile(fileURL);
+    setFileType("image");
+    openModal();
+  };
+  const getFile = async (batchesMetaData,fileName) => {
+    let getFile = await getFileBatchesFromIDB(batchesMetaData);
+    let fileURL = await URL.createObjectURL(getFile);
+    let a = document.createElement("a");
+    a.href = fileURL;
+    a.setAttribute("download",fileName);
+    a.click();
   };
   function openModal() {
     setIsOpen(true);
@@ -39,7 +57,7 @@ const DisplayIdbFiles = function ({ files, fileState }) {
       );
     }
   };
-  const checkFileType = (fileName) => {
+  const checkFileType = (fileName,batchesMetaData) => {
     let fileType = fileName.slice(fileName.indexOf(".") + 1).toLowerCase();
     if (
       fileType == "mp4" ||
@@ -71,9 +89,50 @@ const DisplayIdbFiles = function ({ files, fileState }) {
       fileType == "f4a" ||
       fileType == "f4b"
     ) {
-      return true;
+      return (
+        <button
+          className="btn btn-success m-1"
+          onClick={() => getVideo(batchesMetaData)}
+        >
+          Play
+        </button>
+      );
     }
-    return false;
+    else if (
+      fileType == "apng" ||
+      fileType == "avif" ||
+      fileType == "gif" ||
+      fileType == "jpg" ||
+      fileType == "jpeg" ||
+      fileType == "jfif" ||
+      fileType == "pjpeg" ||
+      fileType == "pjp" ||
+      fileType == "png" ||
+      fileType == "svg" ||
+      fileType == "webp" ||
+      fileType == "bmp" ||
+      fileType == "ico" ||
+      fileType == "cur" ||
+      fileType == "tif" ||
+      fileType == "tiff"
+    ) {
+      return (
+        <button
+          className="btn btn-success m-1"
+          onClick={() => getImage(batchesMetaData)}
+        >
+          View
+        </button>
+      );
+    }
+    return (
+      <button
+        className="btn btn-success m-1"
+        onClick={() => getFile(batchesMetaData,fileName)}
+      >
+        Download
+      </button>
+    );
   };
   const filterFileforMetaData = (idbFiles, fileHash) => {
     return idbFiles.filter((file) => file.fileHash === fileHash);
@@ -124,14 +183,7 @@ const DisplayIdbFiles = function ({ files, fileState }) {
                 >
                   Delete
                 </button>
-                {checkFileType(name) ? (
-                  <button
-                    className="btn btn-success m-1"
-                    onClick={() => getVideo(batchesMetaData)}
-                  >
-                    Play
-                  </button>
-                ) : null}
+                {checkFileType(name,batchesMetaData)}
               </span>
             )}
             <Modal
@@ -139,6 +191,7 @@ const DisplayIdbFiles = function ({ files, fileState }) {
               openModal={openModal}
               closeModal={closeModal}
               file={file}
+              fileType={fileType}
             />
           </div>
         )

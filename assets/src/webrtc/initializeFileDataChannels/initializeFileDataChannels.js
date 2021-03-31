@@ -3,8 +3,10 @@ export const initializeFileDataChannels = function (fileName) {
     try {
       const peerConnection = this.filesPeerConnections[fileName].peerConnection;
       let fileDataChannels = {};
-      let isDcAlreadyExists = this.filesPeerConnections[fileName].dataChannel;
-      if (isDcAlreadyExists) {
+      let isDcAlreadyExists = Object.keys(
+        this.filesPeerConnections[fileName].dataChannels
+      ).length;
+      if (isDcAlreadyExists > 5) {
         resolve(true);
       } else {
         for (let index = 0; index <= 100; index++) {
