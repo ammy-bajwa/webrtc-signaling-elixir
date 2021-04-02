@@ -27,9 +27,9 @@ class App extends Component {
     console.log("datasycs", alivaWebRTC);
     const machineId = uuidv4();
     try {
-      await alivaWS.initializeSocket("/socket");
+      await alivaWS.initializeSocket("ws://localhost:4000/socket");
     } catch (error) {
-      await alivaWS.initializeSocket("/socket");
+      await alivaWS.initializeSocket("ws://localhost:4000/socket");
     }
     await alivaWebRTC.initializeWebRTC(alivaWS.channel, machineId);
     await alivaWebRTC.addWebrtcListener(

@@ -31,12 +31,12 @@ const DisplayIdbFiles = function ({ files, fileState }) {
     setFileType("image");
     openModal();
   };
-  const getFile = async (batchesMetaData,fileName) => {
+  const getFile = async (batchesMetaData, fileName) => {
     let getFile = await getFileBatchesFromIDB(batchesMetaData);
     let fileURL = await URL.createObjectURL(getFile);
     let a = document.createElement("a");
     a.href = fileURL;
-    a.setAttribute("download",fileName);
+    a.setAttribute("download", fileName);
     a.click();
   };
   function openModal() {
@@ -57,78 +57,93 @@ const DisplayIdbFiles = function ({ files, fileState }) {
       );
     }
   };
-  const checkFileType = (fileName,batchesMetaData) => {
-    let fileType = fileName.slice(fileName.indexOf(".") + 1).toLowerCase();
+  const checkFileType = (fileName, batchesMetaData) => {
+    let fileType = fileName.slice(fileName.lastIndexOf(".") + 1).toLowerCase();
     if (
-      fileType == "mp4" ||
-      fileType == "m4p" ||
-      fileType == "flv" ||
-      fileType == "mkv" ||
-      fileType == "webm" ||
-      fileType == "vob" ||
-      fileType == "ogv" ||
-      fileType == "ogg" ||
-      fileType == "avi" ||
-      fileType == "wmv" ||
-      fileType == "rm" ||
-      fileType == "amv" ||
-      fileType == "m4v" ||
-      fileType == "mpg" ||
-      fileType == "mp2" ||
-      fileType == "mpeg" ||
-      fileType == "mpe" ||
-      fileType == "mpv" ||
-      fileType == "m2v" ||
-      fileType == "svi" ||
-      fileType == "3gp" ||
-      fileType == "3g2" ||
-      fileType == "mxf" ||
-      fileType == "nsv" ||
-      fileType == "f4v" ||
-      fileType == "f4p" ||
-      fileType == "f4a" ||
-      fileType == "f4b"
+      fileType === "mp4" ||
+      fileType === "m4p" ||
+      fileType === "flv" ||
+      fileType === "mkv" ||
+      fileType === "webm" ||
+      fileType === "vob" ||
+      fileType === "ogv" ||
+      fileType === "ogg" ||
+      fileType === "avi" ||
+      fileType === "wmv" ||
+      fileType === "rm" ||
+      fileType === "amv" ||
+      fileType === "m4v" ||
+      fileType === "mpg" ||
+      fileType === "mp2" ||
+      fileType === "mpeg" ||
+      fileType === "mpe" ||
+      fileType === "mpv" ||
+      fileType === "m2v" ||
+      fileType === "svi" ||
+      fileType === "3gp" ||
+      fileType === "3g2" ||
+      fileType === "mxf" ||
+      fileType === "nsv" ||
+      fileType === "f4v" ||
+      fileType === "f4p" ||
+      fileType === "f4a" ||
+      fileType === "f4b"
     ) {
       return (
-        <button
-          className="btn btn-success m-1"
-          onClick={() => getVideo(batchesMetaData)}
-        >
-          Play
-        </button>
+        <>
+          <button
+            className="btn btn-success m-1"
+            onClick={() => getVideo(batchesMetaData)}
+          >
+            Play
+          </button>
+          <button
+            className="btn btn-success m-1"
+            onClick={() => getFile(batchesMetaData, fileName)}
+          >
+            Download
+          </button>
+        </>
       );
-    }
-    else if (
-      fileType == "apng" ||
-      fileType == "avif" ||
-      fileType == "gif" ||
-      fileType == "jpg" ||
-      fileType == "jpeg" ||
-      fileType == "jfif" ||
-      fileType == "pjpeg" ||
-      fileType == "pjp" ||
-      fileType == "png" ||
-      fileType == "svg" ||
-      fileType == "webp" ||
-      fileType == "bmp" ||
-      fileType == "ico" ||
-      fileType == "cur" ||
-      fileType == "tif" ||
-      fileType == "tiff"
+    } else if (
+      fileType === "apng" ||
+      fileType === "avif" ||
+      fileType === "gif" ||
+      fileType === "jpg" ||
+      fileType === "jpeg" ||
+      fileType === "jfif" ||
+      fileType === "pjpeg" ||
+      fileType === "pjp" ||
+      fileType === "png" ||
+      fileType === "svg" ||
+      fileType === "webp" ||
+      fileType === "bmp" ||
+      fileType === "ico" ||
+      fileType === "cur" ||
+      fileType === "tif" ||
+      fileType === "tiff"
     ) {
       return (
-        <button
-          className="btn btn-success m-1"
-          onClick={() => getImage(batchesMetaData)}
-        >
-          View
-        </button>
+        <>
+          <button
+            className="btn btn-success m-1"
+            onClick={() => getImage(batchesMetaData)}
+          >
+            View
+          </button>
+          <button
+            className="btn btn-success m-1"
+            onClick={() => getFile(batchesMetaData, fileName)}
+          >
+            Download
+          </button>
+        </>
       );
     }
     return (
       <button
         className="btn btn-success m-1"
-        onClick={() => getFile(batchesMetaData,fileName)}
+        onClick={() => getFile(batchesMetaData, fileName)}
       >
         Download
       </button>
@@ -183,7 +198,7 @@ const DisplayIdbFiles = function ({ files, fileState }) {
                 >
                   Delete
                 </button>
-                {checkFileType(name,batchesMetaData)}
+                {checkFileType(name, batchesMetaData)}
               </span>
             )}
             <Modal
