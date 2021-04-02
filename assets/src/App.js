@@ -31,7 +31,6 @@ class App extends Component {
     } catch (error) {
       await alivaWS.initializeSocket("/socket");
     }
-    
     await alivaWebRTC.initializeWebRTC(alivaWS.channel, machineId);
     await alivaWebRTC.addWebrtcListener(
       alivaWS.channel,

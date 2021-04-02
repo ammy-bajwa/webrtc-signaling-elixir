@@ -71,6 +71,18 @@ export const setupFilePeerConnection = function (fileName) {
               setStatus(`<h2>All File Received Successfully ${fileName}</h2>`);
               console.log("allFileSend received", fileName, dataChannel.label);
             } else if (receivedMessage.isChunk) {
+              const {
+                batchHash,
+                chunkToSend: { startSliceIndex, endSliceIndex },
+              } = receivedMessage;
+              dataChannel.send(
+                JSON.stringify({
+                  fileName,
+                  batchHash,
+                  startSliceIndex,
+                  endSliceIndex,
+                })
+              );
               await alivaWebRTC.saveChunkInMemory(
                 fileName,
                 receivedMessage.batchHash,

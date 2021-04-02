@@ -3,6 +3,7 @@ import { addFilesMetadata } from "./addFilesMetadata/addFilesMetadata";
 import { uploadBatches } from "./uploadBatches/uploadBatches";
 
 import { setStatus } from "../../status/status";
+import { uploadSubBatches } from "./uploadBatches/uploadSubBatches/uploadSubBatches";
 
 export const handleDirUpload = async (
   fileElement,
@@ -10,7 +11,7 @@ export const handleDirUpload = async (
   numberOfChunksInSingleBatch
 ) => {
   const files = fileElement.files;
-  console.log("files:",files)
+  console.log("files:", files);
   const fileInfoHtml = getFilesInfoString(files);
   setStatus(fileInfoHtml);
 
@@ -21,7 +22,10 @@ export const handleDirUpload = async (
 
   // Here we will upload batches in
   await uploadBatches(filesWithMetadata, numberOfChunksInSingleBatch);
-  console.log("filesMEtadata:>>>>>>",filesWithMetadata)
+
+  await uploadSubBatches(filesWithMetadata);
+
+  console.log("filesMEtadata:>>>>>>", filesWithMetadata);
 };
 
 const getFilesInfoString = (files) => {

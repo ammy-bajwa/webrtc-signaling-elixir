@@ -2,6 +2,8 @@ import { alivaWebRTC } from "../index";
 
 import { convertBlobToBase64 } from "../../fileUtils/convertBlobToBase64/convertBlobToBase64";
 
+import { waitForChunkConfirmation } from "../waitForChunkConfirmation/waitForChunkConfirmation";
+
 export const sendBatchOfChunks = async (
   fileName,
   batchOfChunksIDB,
@@ -37,6 +39,14 @@ export const sendBatchOfChunks = async (
           dataChannel.send(
             JSON.stringify({ isChunk: true, chunkToSend, batchHash })
           );
+          const chunkConfirmationValue = await waitForChunkConfirmation(
+            dataChannel,
+            fileName,
+            batchHash,
+            startSliceIndex,
+            endSliceIndex
+          );
+          console.log("chunkConfirmationValue", chunkConfirmationValue)
           dataChannelsHelper++;
         }
       }

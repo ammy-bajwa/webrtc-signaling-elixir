@@ -18,6 +18,7 @@ export const getAllSavedFiles = function () {
           fileSize,
           isReceived,
           batchesMetaData,
+          subBatchesMetaData,
           isOnlyMetadata,
         }) => {
           return {
@@ -26,6 +27,7 @@ export const getAllSavedFiles = function () {
             fileHash,
             isReceived,
             batchesMetaData,
+            subBatchesMetaData,
             isOnlyMetadata,
           };
         }

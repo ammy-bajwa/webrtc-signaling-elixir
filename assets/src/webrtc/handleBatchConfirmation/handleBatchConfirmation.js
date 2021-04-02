@@ -43,20 +43,20 @@ export const handleBatchConfirmation = (dataChannel, message) => {
           batchHash,
           batchKey
         );
-        // if (!isTotalBatchReceived) {
-        //   for (let index = 0; index <= 10; index++) {
-        //     console.log("waiting....", index);
-        //     await causeDelay(500);
-        //     isTotalBatchReceived = await batchConfirmationMemory(
-        //       fileName,
-        //       batchHash,
-        //       batchKey
-        //     );
-        //     if (isTotalBatchReceived) {
-        //       break;
-        //     }
-        //   }
-        // }
+        if (!isTotalBatchReceived) {
+          for (let index = 0; index <= 10; index++) {
+            console.log("waiting....", index);
+            await causeDelay(500);
+            isTotalBatchReceived = await batchConfirmationMemory(
+              fileName,
+              batchHash,
+              batchKey
+            );
+            if (isTotalBatchReceived) {
+              break;
+            }
+          }
+        }
         if (isTotalBatchReceived) {
           setStatus(`<h2>Validating batch ${batchKey}</h2>`);
           const batchBlob = await convertInMemoryBatchToBlob(

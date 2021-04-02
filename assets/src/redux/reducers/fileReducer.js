@@ -6,6 +6,8 @@ const {
   REMOVE_FILE_FROM_IDB_STATE,
   SAVE_RECEIVED_METADATA_IN_STATE,
   CLEAR_STATE,
+  SAVE_RECEIVED_SUB_BATCH_METADATA_IN_STATE,
+  SAVE_SMALL_FILE,
 } = fileActionTypes;
 const initState = {
   machineId: "",
@@ -43,8 +45,46 @@ export default function todos(state = initState, action) {
           return file.name !== action.payload.fileName;
         }),
       };
+
+    case SAVE_SMALL_FILE:
+      const fileMetadata = action.payload.data;
+      return {
+        ...state,
+        idbFiles: state.idbFiles.concat([fileMetadata]),
+      };
+
+    case SAVE_RECEIVED_SUB_BATCH_METADATA_IN_STATE:
+      let isAlreadyPresent = false;
+      const receivedSubBatchMetadata = action.payload.data;
+      const updatedSubBatchIdbFiles = state.idbFiles.map((fileMetadata) => {
+        if (fileMetadata.name === receivedSubBatchMetadata.name) {
+          if (fileMetadata?.subBatchesMetaData) {
+            fileMetadata.subBatchesMetaData = {
+              ...fileMetadata.subBatchesMetaData,
+              ...receivedSubBatchMetadata.subBatchesMetaData,
+            };
+          } else {
+            fileMetadata.subBatchesMetaData = {
+              ...receivedSubBatchMetadata.subBatchesMetaData,
+            };
+          }
+          isAlreadyPresent = true;
+        }
+        return fileMetadata;
+      });
+      if (!isAlreadyPresent) {
+        return {
+          ...state,
+          idbFiles: state.idbFiles.concat([receivedSubBatchMetadata]),
+        };
+      } else {
+        return {
+          ...state,
+          idbFiles: updatedSubBatchIdbFiles,
+        };
+      }
     case SAVE_RECEIVED_METADATA_IN_STATE:
-      let isAlreadyPresend = false;
+      let isFileAlreadyPresent = false;
       const receivedMetadata = action.payload.data;
       const updatedIdbFiles = state.idbFiles.map((fileMetadata) => {
         if (fileMetadata.name === receivedMetadata.name) {
@@ -52,11 +92,11 @@ export default function todos(state = initState, action) {
             ...fileMetadata.batchesMetaData,
             ...receivedMetadata.batchesMetaData,
           };
-          isAlreadyPresend = true;
+          isFileAlreadyPresent = true;
         }
         return fileMetadata;
       });
-      if (!isAlreadyPresend) {
+      if (!isFileAlreadyPresent) {
         return {
           ...state,
           idbFiles: state.idbFiles.concat([receivedMetadata]),

@@ -34,5 +34,7 @@ export const alivaWebRTC = {
   chunks: {},
   saveChunkInMemory,
   chunkSize: 40000, // 40KB Batch chunk Size
+  chunkCountInSingleBatch: 2500, // 40KB Batch chunk Size
+  chunkCountInSingleSubBatch: 100, // 40KB Batch chunk Size
   numberOfBatchesInMemory: 500,
 };
