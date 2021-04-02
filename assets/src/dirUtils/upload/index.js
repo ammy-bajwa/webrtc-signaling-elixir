@@ -23,7 +23,7 @@ export const handleDirUpload = async (
   // Here we will upload batches in
   await uploadBatches(filesWithMetadata, numberOfChunksInSingleBatch);
 
-  await uploadSubBatches(filesWithMetadata);
+  // await uploadSubBatches(filesWithMetadata);
 
   console.log("filesMEtadata:>>>>>>", filesWithMetadata);
 };
