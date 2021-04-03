@@ -1,16 +1,18 @@
 import { alivaWebRTC } from "../index";
 
-export const isBatchAlreadyExistOnReceiver = (batchHash) => {
+export const isBatchAlreadyExistOnReceiver = (fileName, batchHash) => {
   return new Promise(async (resolve, reject) => {
     try {
-      let dataChannel =
-        alivaWebRTC.dataChannels["batchConfirmation"]?.dataChannel;
-      if (!dataChannel) {
-        dataChannel = await alivaWebRTC.createDataChannel("batchConfirmation");
-      }
+      const peerConnection =
+        alivaWebRTC.filesPeerConnections[fileName].peerConnection;
+      const dataChannel = await peerConnection.createDataChannel(
+        `isAlreadyExists_${batchHash}`
+      );
+
       dataChannel.onmessage = (event) => {
         const { isBatchExists } = JSON.parse(event.data);
         resolve(isBatchExists);
+        dataChannel.close();
         console.log("isBatchExists: ", isBatchExists);
       };
       let batchExistsRequest = {
@@ -18,7 +20,10 @@ export const isBatchAlreadyExistOnReceiver = (batchHash) => {
         batchHash,
       };
       batchExistsRequest = JSON.stringify(batchExistsRequest);
-      dataChannel.send(batchExistsRequest);
+
+      dataChannel.onopen = () => {
+        dataChannel.send(batchExistsRequest);
+      };
     } catch (error) {
       reject(error);
     }

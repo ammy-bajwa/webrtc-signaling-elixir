@@ -1,10 +1,12 @@
+import redux from "../../utils/manageRedux";
+
+import store from "../../redux/store";
+
 import { alivaWS } from "../../socket/index";
 
 import { iceServers } from "../iceServers/iceServers";
 
 import { alivaWebRTC } from "../index";
-
-import store from "../../redux/store";
 
 import { addWebrtcListenerForFile } from "../addWebrtcListenerForFile/addWebrtcListenerForFile";
 
@@ -16,7 +18,7 @@ import { getAllSavedFiles } from "../../idbUtils/getAllSavedFiles/getAllSavedFil
 
 import { setStatus } from "../../status/status";
 
-import redux from "../../utils/manageRedux";
+import { checkIfAlreadyExist } from "../../idbUtils/checkIfAlreadyExist/checkIfAlreadyExist";
 
 export const setupFilePeerConnection = function (fileName) {
   return new Promise(async (resolve, reject) => {
@@ -61,7 +63,11 @@ export const setupFilePeerConnection = function (fileName) {
           try {
             console.log("message received fileDC: ");
             const receivedMessage = JSON.parse(message);
-            if (receivedMessage.isConfirmation) {
+            if (receivedMessage.isBatchExists) {
+              const { batchHash } = receivedMessage;
+              const isBatchExists = await checkIfAlreadyExist(batchHash);
+              dataChannel.send(JSON.stringify({ isBatchExists }));
+            } else if (receivedMessage.isConfirmation) {
               console.log("isConfirmation: ", receivedMessage);
               await handleBatchConfirmation(dataChannel, receivedMessage);
             } else if (receivedMessage.allFileSend) {
